@@ -1,6 +1,7 @@
 package com.mygdx.catan;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -9,6 +10,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
 
 public class Board extends ApplicationAdapter {
@@ -18,6 +20,8 @@ public class Board extends ApplicationAdapter {
 	ArrayList<Hex[]> hexes;
 	//coordinate range for axial coordinate system, p,q,r.
 	public static final int[] coordRange = new int[]{-2, 3};
+
+
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
@@ -33,9 +37,12 @@ public class Board extends ApplicationAdapter {
 //		batch.end();
 		// Begin ShapeRenderer
 		shape.begin(ShapeRenderer.ShapeType.Line);
+		int width = Gdx.graphics.getWidth();
+		int height = Gdx.graphics.getHeight();
+
 
 		// Draw a hexagon
-		float[] hexVertices = calculateHexVertices(100, 100, 50); // Example values
+		float[] hexVertices = calculateHexVertices(width/2, height/2, 50); // Example values
 		float[] hexVertices2 = calculateHexVertices(170, 50, 50);
 		shape.polygon(hexVertices);
 		shape.polygon(hexVertices2);
@@ -45,16 +52,18 @@ public class Board extends ApplicationAdapter {
 
 	}
 
-	private Hex[] generateHexes(){
+	private ArrayList<Hex>  generateHexes(){
 		ArrayList<Hex> hexes = new ArrayList<>();
-		for (int q = coordRange[0]; q < coordRange[1]; q++){
-			for (int p = coordRange[0]; q < coordRange[1]; p++) {
-				for (int r = coordRange[0]; q < coordRange[1]; r++) {
 
+		for (int p = coordRange[0]; p < coordRange[1]; p++){
+			for (int q = coordRange[0]; q < coordRange[1]; q++) {
+				for (int r = coordRange[0]; q < coordRange[1]; r++) {
+						Hex hex = new Hex(new int[]{p,q,r});
 					}
 				}
 			}
-		}
+
+		return hexes;
 	}
 
 	private float[] calculateHexVertices(float centerX, float centerY, float size) {

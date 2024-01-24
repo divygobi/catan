@@ -1,32 +1,54 @@
 package com.mygdx.catan;
 
-public class Hex {
-    
-    private String type;
-    private String value;
-    private int[][] vertices;
-    private int[] coord;
+import java.util.Random;
 
-    public Hex(String type, String value, int[][] vertices, int[] coord) {
-        this.type = type;
+public class Hex {
+    public static final String[] resources = new String[]{"WOOD", "SHEEP", "CLAY", "ROCK", "WHEAT"};
+
+    private String resourceType;
+    private int value;
+    private int[][] vertices;
+    private int[] axialCoord;
+
+    public Hex(String type, int value, int[] axialCoord) {
+        this.resourceType = type;
+        this.axialCoord = axialCoord;
         this.value = value;
-        this.vertices = vertices;
-        this.coord = coord;
+
+    }
+
+    public Hex(int[] axialCoord){
+        this.axialCoord = axialCoord;
+        this.resourceType = getRandResource();
+        this.value = getRandValue();
+    }
+
+    private int getRandValue(){
+        Random random = new Random();
+        // Generate a random number between 2 and 12
+        int randomNumber = 2 + random.nextInt(11);
+        return randomNumber;
+    }
+
+    private String getRandResource(){
+        Random random = new Random();
+        int randomResourceIndex = random.nextInt(5);
+        return resources[randomResourceIndex];
     }
 
     public String getType() {
-        return type;
+        return resourceType;
     }
 
     public void setType(String type) {
-        this.type = type;
+        this.resourceType = type;
     }
 
-    public String getValue() {
+    public int getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(int value) {
         this.value = value;
     }
 
@@ -39,11 +61,10 @@ public class Hex {
     }
 
     public int[] getCoord() {
-        return coord;
+        return axialCoord;
     }
 
     public void setCoord(int[] coord) {
-        this.coord = coord;
+        this.axialCoord = coord;
     }
 }
-    
