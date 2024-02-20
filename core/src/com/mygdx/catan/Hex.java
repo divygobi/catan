@@ -1,5 +1,6 @@
 package com.mygdx.catan;
 
+import java.util.Arrays;
 import java.util.Random;
 
 public class Hex {
@@ -66,5 +67,15 @@ public class Hex {
 
     public void setCoord(int[] coord) {
         this.axialCoord = coord;
+    }
+
+    @Override
+    public String toString() {
+        return "Hex{" +
+                "resourceType='" + resourceType + '\'' +
+                ", value=" + value +
+                ", vertices=" + Arrays.toString(vertices) +
+                ", axialCoord=" + Arrays.toString(axialCoord) +
+                '}';
     }
 }
