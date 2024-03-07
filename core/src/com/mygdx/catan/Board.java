@@ -4,12 +4,12 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.PolygonSprite;
-import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.EarClippingTriangulator;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.ShortArray;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,12 +17,12 @@ import java.util.Random;
 
 
 public class Board extends ApplicationAdapter {
-	SpriteBatch batch;
+	PolygonSpriteBatch batch;
 	Texture img;
 	ShapeRenderer shape;
 	ArrayList<Hex> hexes;
-	PolygonSprite polySprite;
-	PolygonSpriteBatch polyBatch;
+	float[][] hexVertices;
+	ArrayList<PolygonSprite> sprites;
 
 	//coordinate range for axial coordinate system, p,q,r.
 	public static final int[] coordRange = new int[]{-2, 3};
@@ -33,41 +33,48 @@ public class Board extends ApplicationAdapter {
 
 	@Override
 	public void create () {
-		batch = new SpriteBatch();
+		batch = new PolygonSpriteBatch();
 		img = new Texture("badlogic.jpg");
 		shape = new ShapeRenderer();
 		hexes = generateHexes();
+		EarClippingTriangulator triangulator = new EarClippingTriangulator();
 
-		polyBatch = new PolygonSpriteBatch();
 
-		Pixmap woodPix = new Pixmap(1,1,Pixmap.Format.RGB888 );
-		Pixmap wheatPix = new Pixmap(1,1,Pixmap.Format.RGB888 );
-		Pixmap rockPix = new Pixmap(1,1,Pixmap.Format.RGB888 );
-		Pixmap clayPix = new Pixmap(1,1,Pixmap.Format.RGB888 );
-		Pixmap sheepPix = new Pixmap(1,1,Pixmap.Format.RGB888 );
+		int width = Gdx.graphics.getWidth();
+		int height = Gdx.graphics.getHeight();
+		int count = 0;
+		for(Hex hex: hexes){
+			int[] coords = hex.getCoord();
+			float[] rectCoords = axialToRectCoords(coords[0], coords[1], coords[2], width/2, height/2);
+			PolygonRegion polyRegion = new PolygonRegion(hex.getTextureRegion(), rectCoords, triangulator.computeTriangles(rectCoords).toArray());
+			sprites.add(new PolygonSprite(polyRegion));
+		}
 
-		
 
 	}
 
 	@Override
 	public void render () {
 		ScreenUtils.clear((float)79/255,(float)166/255,(float)235/255, 1);
-//		batch.begin();
-//		batch.draw(img, 0, 0);
-//		batch.end();
-		// Begin ShapeRenderer
-		shape.begin(ShapeRenderer.ShapeType.Line);
-		shape.setColor(1,1,1,0);
-		int width = Gdx.graphics.getWidth();
-		int height = Gdx.graphics.getHeight();
-
-		for(Hex hex: hexes){
-			int[] coords = hex.getCoord();
-			float[] rectCoords = axialToRectCoords(coords[0], coords[1], coords[2], width/2, height/2);
-			shape.polygon(calculateHexVertices(rectCoords[0], rectCoords[1], hexSize));
-
+		batch.begin();
+		for (int i = 0; i < sprites.size(); i++){
+			PolygonSprite sprite = sprites.get(i);
+			sprite.draw(batch);
 		}
+//		batch.draw(img, 0, 0);
+		batch.end();
+		// Begin ShapeRenderer
+//		shape.begin(ShapeRenderer.ShapeType.Line);
+//		shape.setColor(1,1,1,0);
+//		int width = Gdx.graphics.getWidth();
+//		int height = Gdx.graphics.getHeight();
+
+//		for(Hex hex: hexes){
+//			int[] coords = hex.getCoord();
+//			float[] rectCoords = axialToRectCoords(coords[0], coords[1], coords[2], width/2, height/2);
+//			shape.polygon(calculateHexVertices(rectCoords[0], rectCoords[1], hexSize));
+//
+//		}
 		// Draw a hexagon
 //		float[] hexVertices = calculateHexVertices(width/2, height/2, hexSize); // Example values
 //		float[] hexVertices2 = calculateHexVertices(170, 50, hexSize);
@@ -75,7 +82,7 @@ public class Board extends ApplicationAdapter {
 //		shape.polygon(hexVertices2);
 
 		// End ShapeRenderer
-		shape.end();
+//		shape.end();
 
 	}
 
