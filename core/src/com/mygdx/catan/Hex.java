@@ -5,7 +5,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Random;
 
 public class Hex {
@@ -13,29 +15,19 @@ public class Hex {
 
     private String resourceType;
     private int value;
-    private int[][] vertices;
     private int[] axialCoord;
+    private HashSet<Vertex> vertices;
+    private HashSet<Edge> edges;
     private com.badlogic.gdx.graphics.g2d.TextureRegion textureRegion ;
 
     public Hex(String type, int value, int[] axialCoord) {
         this.resourceType = type;
         this.axialCoord = axialCoord;
         this.value = value;
-        Pixmap pix = new Pixmap(1,1,Pixmap.Format.RGB888 );
 
+        this.vertices = new HashSet<>();
+        this.edges = new HashSet<>();
 
-        switch (resourceType){
-            case "WOOD":
-                pix.setColor(0.76f, 0.6f, 0.42f, 1); // Using a brown color
-            case "WHEAT":
-                pix.setColor(0.93f, 0.9f, 0.55f, 1); // A light, golden brown
-            case "ROCK":
-                pix.setColor(0.5f, 0.5f, 0.5f, 1); // Medium gray
-            case "CLAY":
-                pix.setColor(0.72f, 0.45f, 0.2f, 1); // A reddish-brown
-            case "SHEEP":
-                pix.setColor(0.6f, 0.8f, 0.4f, 1); // Light green
-        }
         this.textureRegion = getTextureRegion(this.resourceType);
     }
 
@@ -43,6 +35,10 @@ public class Hex {
         this.axialCoord = axialCoord;
         this.resourceType = getRandResource();
         this.value = getRandValue();
+
+        this.vertices = new HashSet<>();
+        this.edges = new HashSet<>();
+
         this.textureRegion = getTextureRegion(this.resourceType);
     }
 
@@ -51,16 +47,28 @@ public class Hex {
         switch (resourceType){
             case "WOOD":
                 pix.setColor(0.76f, 0.6f, 0.42f, 1); // Using a brown color
+                break;
             case "WHEAT":
                 pix.setColor(0.93f, 0.9f, 0.55f, 1); // A light, golden brown
+                break;
             case "ROCK":
                 pix.setColor(0.5f, 0.5f, 0.5f, 1); // Medium gray
+                break;
             case "CLAY":
                 pix.setColor(0.72f, 0.45f, 0.2f, 1); // A reddish-brown
+                break;
             case "SHEEP":
                 pix.setColor(0.6f, 0.8f, 0.4f, 1); // Light green
+                break;
+            default:
+                pix.setColor(1, 1, 1, 1); // Default to white if none match
+                break;
         }
-        return new TextureRegion(new Texture(pix));
+        pix.fill();
+
+        TextureRegion region = new TextureRegion(new Texture(pix));
+        pix.dispose(); // Don't forget to dispose of the Pixmap to free memory!
+        return region;
     }
 
     private int getRandValue(){
@@ -92,12 +100,15 @@ public class Hex {
         this.value = value;
     }
 
-    public int[][] getVertices() {
+    public HashSet<Vertex> getVertices() {
         return vertices;
     }
 
-    public void setVertices(int[][] vertices) {
+    public void setVertices(HashSet<Vertex> vertices) {
         this.vertices = vertices;
+    }
+    public void addVertex(Vertex v){
+        this.vertices.add(v);
     }
 
     public int[] getCoord() {
@@ -113,7 +124,7 @@ public class Hex {
         return "Hex{" +
                 "resourceType='" + resourceType + '\'' +
                 ", value=" + value +
-                ", vertices=" + Arrays.toString(vertices) +
+                ", vertices=" + vertices.toString() +
                 ", axialCoord=" + Arrays.toString(axialCoord) +
                 '}';
     }
@@ -124,5 +135,17 @@ public class Hex {
 
     public void setTextureRegion(TextureRegion textureRegion) {
         this.textureRegion = textureRegion;
+    }
+
+    public HashSet<Edge> getNeighboringEdges() {
+        return edges;
+    }
+
+    public void setNeighboringEdges(HashSet<Edge> neighboringEdges) {
+        this.edges = neighboringEdges;
+    }
+
+    public void addEdge(Edge e){
+        this.edges.add(e);
     }
 }
