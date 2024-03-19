@@ -2,6 +2,7 @@ package com.mygdx.catan;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
@@ -22,6 +23,8 @@ public class Board extends ApplicationAdapter {
 	ArrayList<PolygonSprite> sprites;
 	HashMap<String,Edge> edgeSet;
 	HashMap<String,Vertex> vertexSet;
+	TextureRegion edgeTexture;
+	TextureRegion vertexTexture;
 
 	//coordinate range for axial coordinate system, ,q,r.
 	public static final int[] coordRange = new int[]{-2, 3};
@@ -39,6 +42,7 @@ public class Board extends ApplicationAdapter {
 		sprites = new ArrayList<PolygonSprite>();
 		edgeSet = new HashMap<>();
 		vertexSet = new HashMap<>();
+		setTextures();
 		EarClippingTriangulator triangulator = new EarClippingTriangulator();
 
 
@@ -51,7 +55,7 @@ public class Board extends ApplicationAdapter {
 			float[] rectCoords = axialToRectCoords(coords[0], coords[1], coords[2], width/2, height/2);
 			float[] vertices = calculateHexVertices(rectCoords[0], rectCoords[1], hexSize);
 			float[][] edges = calculateHexEdges(vertices);
-			PolygonRegion polyRegion = new PolygonRegion(hex.getTextureRegion(), calculateHexVertices(rectCoords[0], rectCoords[1], hexSize), triangulator.computeTriangles(vertices).toArray());
+			PolygonRegion polyRegion = new PolygonRegion(hex.getTextureRegion(), vertices, triangulator.computeTriangles(vertices).toArray());
 			sprites.add(new PolygonSprite(polyRegion));
 
 			for(int i = 0; i < vertices.length; i+=2){
@@ -98,6 +102,19 @@ public class Board extends ApplicationAdapter {
 
 			}
 
+
+		}
+
+		//Add sprites for edges
+		for(Edge e: edgeSet.values()){
+			float[] coords = e.getPolygonCoords();
+			PolygonRegion polyRegion = new PolygonRegion(edgeTexture, coords, triangulator.computeTriangles(coords).toArray());
+			sprites.add(new PolygonSprite(polyRegion));
+		}
+
+
+		//Add sprites for vertices
+		for(Vertex v: vertexSet.values()){
 
 		}
 
@@ -161,6 +178,7 @@ public class Board extends ApplicationAdapter {
 		// Return a new TextureRegion based on the Texture.
 		return new TextureRegion(texture);
 	}
+
 	private Texture createSampleTexture() {
 		// Create a Pixmap of 100x100 pixels with RGBA8888 format for high quality.
 		Pixmap pixmap = new Pixmap(100, 100, Pixmap.Format.RGBA8888);
@@ -253,6 +271,13 @@ public class Board extends ApplicationAdapter {
 		return String.format("%.2f,%.2f to %.2f,%.2f", x1, y1, x2, y2);
 	}
 
+	public void setTextures() {
+		Pixmap pix = new Pixmap(1,1,Pixmap.Format.RGB888 );
+		pix.setColor(Color.BLACK);
+		pix.fill();
+		this.edgeTexture = new TextureRegion(new Texture(pix));
+
+	}
 
 	@Override
 	public void dispose () {

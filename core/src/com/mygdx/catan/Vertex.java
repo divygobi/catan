@@ -1,5 +1,6 @@
 package com.mygdx.catan;
 
+import java.util.Arrays;
 import java.util.HashSet;
 
 public class Vertex {
@@ -21,6 +22,17 @@ public class Vertex {
         connectedEdges.add(e);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Vertex vertex = (Vertex) o;
+        return Arrays.equals(rectCoords, vertex.rectCoords);
+    }
 
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(rectCoords);
+    }
 }
 
