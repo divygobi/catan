@@ -1,8 +1,28 @@
 package com.mygdx.catan;
 
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.g2d.PolygonSprite;
+import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MyInputProcessor implements InputProcessor {
+
+    ArrayList<Hex> hexes;
+    HashMap<String,Edge> edgeSet;
+    HashMap<String,Vertex> vertexSet;
+    PolygonSpriteBatch batch;
+
+    public MyInputProcessor( ArrayList<Hex> hexes,
+    HashMap<String,Edge> edgeSet,
+    HashMap<String,Vertex> vertexSet, PolygonSpriteBatch batch){
+        this.hexes = hexes;
+        this.edgeSet = edgeSet;
+        this.vertexSet = vertexSet;
+        this.batch = batch;
+    }
+
     public boolean keyDown (int keycode) {
         return false;
     }

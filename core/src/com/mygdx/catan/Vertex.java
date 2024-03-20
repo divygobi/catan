@@ -7,11 +7,13 @@ public class Vertex {
     HashSet<Hex> neighboringHexes;
     float[] rectCoords;
     HashSet<Edge> connectedEdges;
+    String houseColor;
 
     public Vertex(float x, float y){
         this.rectCoords = new float[]{x, y};
         neighboringHexes = new HashSet<Hex>();
         connectedEdges = new HashSet<Edge>();
+        houseColor = "None";
     }
 
     public void addHexes(Hex h){

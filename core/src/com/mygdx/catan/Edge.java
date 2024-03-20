@@ -15,6 +15,7 @@ public class Edge {
     float[][] rectCoords;
     private HashSet<Vertex> connectedVertices;
     private float[] polygonCoords;
+    String roadColor;
     com.badlogic.gdx.graphics.g2d.TextureRegion textureRegion ;
 
 
@@ -23,7 +24,7 @@ public class Edge {
         this.neighboringHexes = new HashSet<Hex>();
         this.connectedVertices = new HashSet<Vertex>();
         this.polygonCoords = calculateRectangleFromLine(rectCoords[0],rectCoords[1],5);
-
+        this.roadColor = "None";
     }
 
     public static float[] calculateRectangleFromLine(float[] point1, float[] point2, float width) {

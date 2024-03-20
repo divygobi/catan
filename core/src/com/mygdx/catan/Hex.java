@@ -16,6 +16,7 @@ public class Hex {
     private String resourceType;
     private int value;
     private int[] axialCoord;
+    private float[] rectCoords;
     private HashSet<Vertex> vertices;
     private HashSet<Edge> edges;
     private com.badlogic.gdx.graphics.g2d.TextureRegion textureRegion ;
@@ -24,7 +25,7 @@ public class Hex {
         this.resourceType = type;
         this.axialCoord = axialCoord;
         this.value = value;
-
+        this.rectCoords = null;
         this.vertices = new HashSet<>();
         this.edges = new HashSet<>();
 
@@ -42,11 +43,12 @@ public class Hex {
         this.textureRegion = getTextureRegion(this.resourceType);
     }
 
+    //TODO Need to move this outside of hex initialization, make it similar to edge sprite generation.
     private TextureRegion getTextureRegion(String resourceType) {
         Pixmap pix = new Pixmap(1,1,Pixmap.Format.RGB888 );
         switch (resourceType){
             case "WOOD":
-                pix.setColor(0.76f, 0.6f, 0.42f, 1); // Using a brown color
+                pix.setColor(0.039f, 0.29f, 0.12f, 1); // Light green
                 break;
             case "WHEAT":
                 pix.setColor(0.93f, 0.9f, 0.55f, 1); // A light, golden brown
@@ -147,5 +149,13 @@ public class Hex {
 
     public void addEdge(Edge e){
         this.edges.add(e);
+    }
+
+    public float[] getRectCoords() {
+        return rectCoords;
+    }
+
+    public void setRectCoords(float[] rectCoords) {
+        this.rectCoords = rectCoords;
     }
 }

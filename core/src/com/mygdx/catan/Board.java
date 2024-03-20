@@ -17,32 +17,37 @@ import java.util.*;
 
 public class Board extends ApplicationAdapter {
 	PolygonSpriteBatch batch;
+	BitmapFont font;
 	Texture img;
 	ShapeRenderer shape;
 	ArrayList<Hex> hexes;
-	ArrayList<PolygonSprite> sprites;
+	ArrayList<PolygonSprite> hexSprites;
+	ArrayList<PolygonSprite> edgeSprites;
 	HashMap<String,Edge> edgeSet;
 	HashMap<String,Vertex> vertexSet;
 	TextureRegion edgeTexture;
 	TextureRegion vertexTexture;
+	TextureFactory textureFactory;
 
 	//coordinate range for axial coordinate system, ,q,r.
 	public static final int[] coordRange = new int[]{-2, 3};
 	public static final float hexSize = 50;
 	public static final float SQRT3 = (float)Math.sqrt(3);
 
-
-
 	@Override
 	public void create () {
-		batch = new PolygonSpriteBatch();
-		img = new Texture("badlogic.jpg");
-		shape = new ShapeRenderer();
-		hexes = generateHexes();
-		sprites = new ArrayList<PolygonSprite>();
-		edgeSet = new HashMap<>();
-		vertexSet = new HashMap<>();
-		setTextures();
+		this.batch = new PolygonSpriteBatch();
+		this.img = new Texture("badlogic.jpg");
+		this.shape = new ShapeRenderer();
+		this.hexes = generateHexes();
+		this.hexSprites = new ArrayList<>();
+		this.edgeSprites = new ArrayList<>();
+		this.edgeSet = new HashMap<>();
+		this.vertexSet = new HashMap<>();
+		this.textureFactory = new TextureFactory();
+		this.edgeTexture = textureFactory.getEdgeTexture();
+		this.font = new BitmapFont();
+		font.setColor(Color.BLACK);
 		EarClippingTriangulator triangulator = new EarClippingTriangulator();
 
 
@@ -53,10 +58,11 @@ public class Board extends ApplicationAdapter {
 		for(Hex hex: hexes){
 			int[] coords = hex.getCoord();
 			float[] rectCoords = axialToRectCoords(coords[0], coords[1], coords[2], width/2, height/2);
+			hex.setRectCoords(rectCoords);
 			float[] vertices = calculateHexVertices(rectCoords[0], rectCoords[1], hexSize);
 			float[][] edges = calculateHexEdges(vertices);
 			PolygonRegion polyRegion = new PolygonRegion(hex.getTextureRegion(), vertices, triangulator.computeTriangles(vertices).toArray());
-			sprites.add(new PolygonSprite(polyRegion));
+			hexSprites.add(new PolygonSprite(polyRegion));
 
 			for(int i = 0; i < vertices.length; i+=2){
 				float x = vertices[i];
@@ -106,10 +112,11 @@ public class Board extends ApplicationAdapter {
 		}
 
 		//Add sprites for edges
+		//TODO Make sprites look prettier, might need to not use triangles
 		for(Edge e: edgeSet.values()){
 			float[] coords = e.getPolygonCoords();
 			PolygonRegion polyRegion = new PolygonRegion(edgeTexture, coords, triangulator.computeTriangles(coords).toArray());
-			sprites.add(new PolygonSprite(polyRegion));
+			edgeSprites.add(new PolygonSprite(polyRegion));
 		}
 
 
@@ -125,11 +132,24 @@ public class Board extends ApplicationAdapter {
 	public void render () {
 		ScreenUtils.clear((float)79/255,(float)166/255,(float)235/255, 1);
 
-		batch.begin();
-		for (int i = 0; i < sprites.size(); i++){
+		MyInputProcessor inputProcessor = new MyInputProcessor(this.hexes, this.edgeSet, this.vertexSet, this.batch);
+		Gdx.input.setInputProcessor(inputProcessor);
 
-			PolygonSprite sprite = sprites.get(i);
+		batch.begin();
+		for (int i = 0; i < hexSprites.size(); i++){
+			PolygonSprite sprite = hexSprites.get(i);
 			sprite.draw(batch);
+		}
+
+		for (int i = 0; i < edgeSprites.size(); i++){
+			PolygonSprite sprite = edgeSprites.get(i);
+			sprite.draw(batch);
+		}
+
+		for(Object h:hexes.toArray()){
+			Hex hex = (Hex)h;
+			float[] rectCoords = hex.getRectCoords();
+			font.draw(batch, Integer.toString(hex.getValue()), rectCoords[0]-5, rectCoords[1]+5);
 		}
 
 //		batch.draw(img, 0, 0);
