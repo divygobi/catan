@@ -48,22 +48,22 @@ public class Hex {
         Pixmap pix = new Pixmap(1,1,Pixmap.Format.RGB888 );
         switch (resourceType){
             case "WOOD":
-                pix.setColor(0.039f, 0.29f, 0.12f, 1); // Light green
+                pix.setColor(0.039f, 0.29f, 0.12f, 0.5F); // Light green
                 break;
             case "WHEAT":
-                pix.setColor(0.93f, 0.9f, 0.55f, 1); // A light, golden brown
+                pix.setColor(0.93f, 0.9f, 0.55f, 0.5F); // A light, golden brown
                 break;
             case "ROCK":
-                pix.setColor(0.5f, 0.5f, 0.5f, 1); // Medium gray
+                pix.setColor(0.5f, 0.5f, 0.5f, 0.5F); // Medium gray
                 break;
             case "CLAY":
-                pix.setColor(0.72f, 0.45f, 0.2f, 1); // A reddish-brown
+                pix.setColor(0.72f, 0.45f, 0.2f, 0.5F); // A reddish-brown
                 break;
             case "SHEEP":
-                pix.setColor(0.6f, 0.8f, 0.4f, 1); // Light green
+                pix.setColor(0.6f, 0.8f, 0.4f, 0.5F); // Light green
                 break;
             default:
-                pix.setColor(1, 1, 1, 1); // Default to white if none match
+                pix.setColor(1, 1, 1, 0.5F); // Default to white if none match
                 break;
         }
         pix.fill();

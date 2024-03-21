@@ -21,13 +21,16 @@ public class Board extends ApplicationAdapter {
 	Texture img;
 	ShapeRenderer shape;
 	ArrayList<Hex> hexes;
-	ArrayList<PolygonSprite> hexSprites;
-	ArrayList<PolygonSprite> edgeSprites;
+	ArrayList<HexSprite> hexSprites;
+	ArrayList<EdgeSprite> edgeSprites;
+	ArrayList<VertexSprite> vertexSprites;
 	HashMap<String,Edge> edgeSet;
 	HashMap<String,Vertex> vertexSet;
 	TextureRegion edgeTexture;
 	TextureRegion vertexTexture;
 	TextureFactory textureFactory;
+	Player currPlayer;
+	MyInputProcessor boardInput;
 
 	//coordinate range for axial coordinate system, ,q,r.
 	public static final int[] coordRange = new int[]{-2, 3};
@@ -42,6 +45,7 @@ public class Board extends ApplicationAdapter {
 		this.hexes = generateHexes();
 		this.hexSprites = new ArrayList<>();
 		this.edgeSprites = new ArrayList<>();
+		this.vertexSprites = new ArrayList<>();
 		this.edgeSet = new HashMap<>();
 		this.vertexSet = new HashMap<>();
 		this.textureFactory = new TextureFactory();
@@ -49,7 +53,7 @@ public class Board extends ApplicationAdapter {
 		this.font = new BitmapFont();
 		font.setColor(Color.BLACK);
 		EarClippingTriangulator triangulator = new EarClippingTriangulator();
-
+		this.currPlayer = new Player(1);
 
 		int width = Gdx.graphics.getWidth();
 		int height = Gdx.graphics.getHeight();
@@ -62,7 +66,7 @@ public class Board extends ApplicationAdapter {
 			float[] vertices = calculateHexVertices(rectCoords[0], rectCoords[1], hexSize);
 			float[][] edges = calculateHexEdges(vertices);
 			PolygonRegion polyRegion = new PolygonRegion(hex.getTextureRegion(), vertices, triangulator.computeTriangles(vertices).toArray());
-			hexSprites.add(new PolygonSprite(polyRegion));
+			hexSprites.add(new HexSprite(polyRegion, hex));
 
 			for(int i = 0; i < vertices.length; i+=2){
 				float x = vertices[i];
@@ -116,7 +120,7 @@ public class Board extends ApplicationAdapter {
 		for(Edge e: edgeSet.values()){
 			float[] coords = e.getPolygonCoords();
 			PolygonRegion polyRegion = new PolygonRegion(edgeTexture, coords, triangulator.computeTriangles(coords).toArray());
-			edgeSprites.add(new PolygonSprite(polyRegion));
+			edgeSprites.add(new EdgeSprite(polyRegion, e));
 		}
 
 
@@ -125,15 +129,16 @@ public class Board extends ApplicationAdapter {
 
 		}
 
+		this.boardInput = new MyInputProcessor(this.hexSprites, this.edgeSprites, this.vertexSprites, this.batch);
+		Gdx.input.setInputProcessor(boardInput);
+		boardInput.currPlayer = this.currPlayer;
+
 
 	}
 
 	@Override
 	public void render () {
 		ScreenUtils.clear((float)79/255,(float)166/255,(float)235/255, 1);
-
-		MyInputProcessor inputProcessor = new MyInputProcessor(this.hexes, this.edgeSet, this.vertexSet, this.batch);
-		Gdx.input.setInputProcessor(inputProcessor);
 
 		batch.begin();
 		for (int i = 0; i < hexSprites.size(); i++){
@@ -146,7 +151,7 @@ public class Board extends ApplicationAdapter {
 			sprite.draw(batch);
 		}
 
-		for(Object h:hexes.toArray()){
+		for(Object h: hexes.toArray()){
 			Hex hex = (Hex)h;
 			float[] rectCoords = hex.getRectCoords();
 			font.draw(batch, Integer.toString(hex.getValue()), rectCoords[0]-5, rectCoords[1]+5);
