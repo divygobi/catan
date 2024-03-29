@@ -28,18 +28,18 @@ public class Edge {
     }
 
     public static float[] calculateRectangleFromLine(float[] point1, float[] point2, float width) {
-        // Calculate vector between points
+        // calculate vector between points
         float[] v = {point2[0] - point1[0], point2[1] - point1[1]};
 
-        // Calculate a perpendicular to it
+        // calculate a perpendicular to it
         float[] p = {v[1], -v[0]};
 
-        // Normalize the perpendicular vector
+        // normalize the perpendicular vector
         float length = (float)Math.sqrt(p[0] * p[0] + p[1] * p[1]);
         float[] n = {p[0] / length, p[1] / length};
 
-        // Calculate 4 points that form a rectangle
-        float[] rectangle = new float[8]; // Array to hold rectangle corners
+        // calculate vertices
+        float[] rectangle = new float[8];
         rectangle[0] = point1[0] + n[0] * width / 2;
         rectangle[1] = point1[1] + n[1] * width / 2;
         rectangle[2] = point1[0] - n[0] * width / 2;
@@ -89,6 +89,29 @@ public class Edge {
 
     public void setPlayer(Player player) {
         this.player = player;
+    }
+
+    public String toString(){
+        String res = "{\n" ;
+        res += "Vertex to vertex coords: ";
+        res += "(";
+        res += Arrays.toString(rectCoords[0]);
+        res += ", " + Arrays.toString(rectCoords[1]);
+        res += ")\n";
+        res += "Rectangular polygon coords: ";
+        res += "(";
+        for(int i = 0; i< polygonCoords.length; i+=2){
+            res += "(" + polygonCoords[i] + "," + polygonCoords[i+1] + ")";
+        }
+
+
+        res += ")";
+
+
+
+        res += "\n}";
+        return res;
+
     }
 }
 

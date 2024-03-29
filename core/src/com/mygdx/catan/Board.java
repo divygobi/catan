@@ -2,15 +2,18 @@ package com.mygdx.catan;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.EarClippingTriangulator;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.ShortArray;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import java.util.*;
 
@@ -31,17 +34,26 @@ public class Board extends ApplicationAdapter {
 	TextureFactory textureFactory;
 	Player currPlayer;
 	MyInputProcessor boardInput;
+	HashMap<Integer, Integer> numberCounts;
+	HashMap<Hex.Resource, Integer> resourceCounts;
+	private Stage stage;
 
-	//coordinate range for axial coordinate system, ,q,r.
+
+	//coordinate range for axial coordinate system, p,q,r.
 	public static final int[] coordRange = new int[]{-2, 3};
 	public static final float hexSize = 50;
 	public static final float SQRT3 = (float)Math.sqrt(3);
 
 	@Override
 	public void create () {
+
+		Gdx.graphics.setWindowedMode(900,700);
 		this.batch = new PolygonSpriteBatch();
 		this.img = new Texture("badlogic.jpg");
 		this.shape = new ShapeRenderer();
+		this.numberCounts = new HashMap<>();
+		this.resourceCounts = new HashMap<>();
+		initializeBoardCounts();
 		this.hexes = generateHexes();
 		this.hexSprites = new ArrayList<>();
 		this.edgeSprites = new ArrayList<>();
@@ -49,6 +61,8 @@ public class Board extends ApplicationAdapter {
 		this.edgeSet = new HashMap<>();
 		this.vertexSet = new HashMap<>();
 		this.textureFactory = new TextureFactory();
+		this.stage = new Stage(new ScreenViewport());
+
 		this.edgeTexture = textureFactory.getEdgeTexture();
 		this.font = new BitmapFont();
 		font.setColor(Color.BLACK);
@@ -59,12 +73,16 @@ public class Board extends ApplicationAdapter {
 		int height = Gdx.graphics.getHeight();
 		TextureRegion sampleRegion = createSampleTextureRegion();
 
+
+
 		for(Hex hex: hexes){
 			int[] coords = hex.getCoord();
-			float[] rectCoords = axialToRectCoords(coords[0], coords[1], coords[2], width/2, height/2);
+			float[] rectCoords = axialToRectCoords(coords[0], coords[1], coords[2], width/2 + 200, height/2);
 			hex.setRectCoords(rectCoords);
 			float[] vertices = calculateHexVertices(rectCoords[0], rectCoords[1], hexSize);
+
 			float[][] edges = calculateHexEdges(vertices);
+
 			PolygonRegion polyRegion = new PolygonRegion(hex.getTextureRegion(), vertices, triangulator.computeTriangles(vertices).toArray());
 			hexSprites.add(new HexSprite(polyRegion, hex));
 
@@ -85,17 +103,25 @@ public class Board extends ApplicationAdapter {
 
 
 			for(int i = 0; i < edges.length; i+=1){
+			//	System.out.println(Arrays.toString(edges[i]));
 				float x1 = edges[i][0];
 				float y1 = edges[i][1];
 				float x2 = edges[i][2];
 				float y2 = edges[i][3];
 				String formattedEdgeKey = edgeToString(x1, y1, x2, y2);
+				String formattedReverseEdgeKey = edgeToString(x2, y2, x1, y1);
 
-				if(!edgeSet.containsKey(formattedEdgeKey)){
+				if(!edgeSet.containsKey(formattedEdgeKey) && !edgeSet.containsKey(formattedReverseEdgeKey)){
 					edgeSet.put(formattedEdgeKey, new Edge(x1, y1, x2, y2));
 				}
+				Edge edge;
+				if(edgeSet.containsKey(formattedEdgeKey)){
+					edge = edgeSet.get(formattedEdgeKey);
+				}
+				else{
+					edge = edgeSet.get(formattedReverseEdgeKey);
+				}
 
-				Edge edge = edgeSet.get(formattedEdgeKey);
 				hex.addEdge(edge);
 				edge.addHexes(hex);
 
@@ -117,7 +143,9 @@ public class Board extends ApplicationAdapter {
 
 		//Add sprites for edges
 		//TODO Make sprites look prettier, might need to not use triangles
-		for(Edge e: edgeSet.values()){
+		for(Map.Entry<String, Edge> entry: edgeSet.entrySet()){
+			Edge e = entry.getValue();
+		//	System.out.println(entry.getKey());
 			float[] coords = e.getPolygonCoords();
 			PolygonRegion polyRegion = new PolygonRegion(edgeTexture, coords, triangulator.computeTriangles(coords).toArray());
 			edgeSprites.add(new EdgeSprite(polyRegion, e));
@@ -130,8 +158,14 @@ public class Board extends ApplicationAdapter {
 		}
 
 		this.boardInput = new MyInputProcessor(this.hexSprites, this.edgeSprites, this.vertexSprites, this.batch);
-		Gdx.input.setInputProcessor(boardInput);
+		//Gdx.input.setInputProcessor(boardInput);
 		boardInput.currPlayer = this.currPlayer;
+
+		InputMultiplexer multiplexer = new InputMultiplexer();
+		multiplexer.addProcessor(stage);
+		multiplexer.addProcessor(boardInput);
+		Gdx.input.setInputProcessor(multiplexer);
+
 
 
 	}
@@ -160,7 +194,7 @@ public class Board extends ApplicationAdapter {
 //		batch.draw(img, 0, 0);
 		batch.end();
 
-		
+
 		// Begin ShapeRenderer
 //		shape.begin(ShapeRenderer.ShapeType.Line);
 //		shape.setColor(1,1,1,0);
@@ -240,7 +274,17 @@ public class Board extends ApplicationAdapter {
 			for (int q = coordRange[0]; q < coordRange[1]; q++) {
 				for (int r = coordRange[0]; r < coordRange[1]; r++) {
 					if(p+q+r == 0){
-						Hex hex = new Hex(new int[]{p, q, r});
+						int value = Hex.getRandValue();
+						Hex.Resource resource = Hex.getRandResource();
+						while(this.numberCounts.get(value) == 0){
+							value = Hex.getRandValue();
+						}
+						while (this.resourceCounts.get(resource) == 0){
+							resource = Hex.getRandResource();
+						}
+						numberCounts.put(value, numberCounts.get(value)-1);
+						resourceCounts.put(resource, resourceCounts.get(resource)-1);
+						Hex hex = new Hex(resource, value, new int[]{p, q, r});
 						//Hex hex = new Hex(new int[]{0,0,0});
 						hexes.add(hex);
 						System.out.println("Made hex with" + hex);
@@ -251,6 +295,7 @@ public class Board extends ApplicationAdapter {
 		return hexes;
 	}
 
+	//TODO Add to util
 	private float[] calculateHexVertices(float centerX, float centerY, float size) {
 		float[] vertices = new float[12]; // 6 points * 2 (X and Y for each)
 		for (int i = 0; i < 6; i++) {
@@ -261,6 +306,7 @@ public class Board extends ApplicationAdapter {
 		return vertices;
 	}
 
+	//TODO Add to util
 	private float[][] calculateHexEdges(float[] vertices) {
 		float[][] edges = new float[6][4]; // 6 edges, each defined by 4 numbers (x1, y1, x2, y2)
 
@@ -285,24 +331,35 @@ public class Board extends ApplicationAdapter {
 		return edges;
 	}
 
+	//TODO Add to config file
+	private void initializeBoardCounts(){
+
+		this.numberCounts.put(2,1);
+		for(int i = 3; i < 12; i++){
+			this.numberCounts.put(i,2);
+		}
+		this.numberCounts.put(12,1);
+
+		this.resourceCounts.put(Hex.Resource.ROCK, 4);
+		this.resourceCounts.put(Hex.Resource.CLAY, 4);
+		this.resourceCounts.put(Hex.Resource.WHEAT, 4);
+		this.resourceCounts.put(Hex.Resource.WOOD, 4);
+		this.resourceCounts.put(Hex.Resource.SHEEP,3 );
+
+	}
+
+	//TODO Add to util
 	public static String vertexToString(float x, float y) {
 		return String.format("%.2f,%.2f", x, y);
 	}
 
-
+	//TODO Add to util
 	public static String edgeToString(float x1, float y1, float x2, float y2) {
 		// If direction is not important, sort the points
 		// For simplicity, here we assume direction matters
 		return String.format("%.2f,%.2f to %.2f,%.2f", x1, y1, x2, y2);
 	}
 
-	public void setTextures() {
-		Pixmap pix = new Pixmap(1,1,Pixmap.Format.RGB888 );
-		pix.setColor(Color.BLACK);
-		pix.fill();
-		this.edgeTexture = new TextureRegion(new Texture(pix));
-
-	}
 
 	@Override
 	public void dispose () {

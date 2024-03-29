@@ -19,7 +19,7 @@ public class MyInputProcessor implements InputProcessor {
     ArrayList<VertexSprite> vertices;
     PolygonSpriteBatch batch;
     Player currPlayer;
-    TextureFactory t;
+    TextureFactory textureFactory;
     EarClippingTriangulator triangulator;
 
 
@@ -30,7 +30,7 @@ public class MyInputProcessor implements InputProcessor {
         this.edges = edges;
         this.vertices = vertices;
         this.batch = batch;
-        t = new TextureFactory();
+        textureFactory = new TextureFactory();
         triangulator = new EarClippingTriangulator();
         this.currPlayer = null;
     }
@@ -49,8 +49,9 @@ public class MyInputProcessor implements InputProcessor {
 
     public boolean touchDown (int x, int y, int pointer, int button) {
 
+        EdgeSprite newEdge;
         for (int i = 0; i < edges.size(); i++){
-            EdgeSprite edgeSprite = edges.get(i);
+           EdgeSprite edgeSprite = edges.get(i);
             if (edgeSprite.getBoundingRectangle().contains(x, Math.abs(Gdx.graphics.getHeight() - y))) {
                 System.out.println("A right click on an edge has been clicked");
                 Edge edge = edgeSprite.edge;
@@ -58,14 +59,18 @@ public class MyInputProcessor implements InputProcessor {
                 // Change the sprite's color
 
                 float[] coords = edge.getPolygonCoords();
-                PolygonRegion polyRegion = new PolygonRegion(t.getEdgeTexture(Color.RED), coords, triangulator.computeTriangles(coords).toArray());
+                System.out.println(edgeSprite.edge);
+                PolygonRegion polyRegion = new PolygonRegion(textureFactory.getEdgeTexture(edge.getPlayer().getColor()), coords, triangulator.computeTriangles(coords).toArray());
+                newEdge = new EdgeSprite(polyRegion, edge);
+                edges.set(i, newEdge);
 
-                edges.set(i, new EdgeSprite(polyRegion, edge));
 
-                return true;
             }
+
         }
-        return false;
+
+
+        return true;
     }
 
     public boolean touchUp (int x, int y, int pointer, int button) {

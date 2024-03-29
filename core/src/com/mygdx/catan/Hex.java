@@ -11,9 +11,9 @@ import java.util.HashSet;
 import java.util.Random;
 
 public class Hex {
-    public static final String[] resources = new String[]{"WOOD", "SHEEP", "CLAY", "ROCK", "WHEAT"};
+    public static final Resource[] resources = new Resource[]{Resource.WOOD, Resource.SHEEP, Resource.CLAY, Resource.ROCK, Resource.WHEAT};
 
-    private String resourceType;
+    private Resource resourceType;
     private int value;
     private int[] axialCoord;
     private float[] rectCoords;
@@ -21,7 +21,24 @@ public class Hex {
     private HashSet<Edge> edges;
     private com.badlogic.gdx.graphics.g2d.TextureRegion textureRegion ;
 
-    public Hex(String type, int value, int[] axialCoord) {
+    public enum Resource{
+        WOOD("WOOD"), WHEAT("WHEAT"), SHEEP("SHEEP"), ROCK("ROCK"), CLAY("CLAY");
+        private String value;
+        private Resource(String value){
+            this.value = value;
+        }
+
+        public String getString(){
+            return value;
+        }
+
+        public boolean equals(Resource r){
+            return value.equals(r.getString());
+        }
+
+    }
+
+    public Hex(Resource type, int value, int[] axialCoord) {
         this.resourceType = type;
         this.axialCoord = axialCoord;
         this.value = value;
@@ -44,22 +61,22 @@ public class Hex {
     }
 
     //TODO Need to move this outside of hex initialization, make it similar to edge sprite generation.
-    private TextureRegion getTextureRegion(String resourceType) {
+    private TextureRegion getTextureRegion(Resource resourceType) {
         Pixmap pix = new Pixmap(1,1,Pixmap.Format.RGB888 );
         switch (resourceType){
-            case "WOOD":
+            case WOOD:
                 pix.setColor(0.039f, 0.29f, 0.12f, 0.5F); // Light green
                 break;
-            case "WHEAT":
+            case WHEAT:
                 pix.setColor(0.93f, 0.9f, 0.55f, 0.5F); // A light, golden brown
                 break;
-            case "ROCK":
+            case ROCK:
                 pix.setColor(0.5f, 0.5f, 0.5f, 0.5F); // Medium gray
                 break;
-            case "CLAY":
+            case CLAY:
                 pix.setColor(0.72f, 0.45f, 0.2f, 0.5F); // A reddish-brown
                 break;
-            case "SHEEP":
+            case SHEEP:
                 pix.setColor(0.6f, 0.8f, 0.4f, 0.5F); // Light green
                 break;
             default:
@@ -73,24 +90,24 @@ public class Hex {
         return region;
     }
 
-    private int getRandValue(){
+    public static int getRandValue(){
         Random random = new Random();
         // Generate a random number between 2 and 12
         int randomNumber = 2 + random.nextInt(11);
         return randomNumber;
     }
 
-    private String getRandResource(){
+    public static Resource getRandResource(){
         Random random = new Random();
         int randomResourceIndex = random.nextInt(5);
         return resources[randomResourceIndex];
     }
 
-    public String getType() {
+    public Resource getType() {
         return resourceType;
     }
 
-    public void setType(String type) {
+    public void setType(Resource type) {
         this.resourceType = type;
     }
 
