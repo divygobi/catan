@@ -49,12 +49,43 @@ public class MyInputProcessor implements InputProcessor {
 
     public boolean touchDown (int x, int y, int pointer, int button) {
 
-        EdgeSprite newEdge;
+
+        for (int i = 0; i < vertices.size(); i++){
+            VertexSprite vertexSprite = vertices.get(i);
+            if (vertexSprite.getBoundingRectangle().contains(x, Math.abs(Gdx.graphics.getHeight() - y))) {
+
+                VertexSprite newVertex;
+                System.out.println("A right click on an edge has been clicked");
+                Vertex vertex = vertexSprite.vertex;
+                if(vertex.getPlayer() != null){
+                    continue;
+                }
+                vertex.setPlayer(this.currPlayer);
+                // Change the sprite's color
+
+                float[] coords = vertex.getPolygonCoords();
+                System.out.println(vertexSprite.vertex);
+                PolygonRegion polyRegion = new PolygonRegion(textureFactory.getEdgeTexture(vertex.getPlayer().getColor()), coords, triangulator.computeTriangles(coords).toArray());
+                newVertex = new VertexSprite(polyRegion, vertex);
+                vertices.set(i, newVertex);
+                return true;
+
+
+            }
+
+        }
+
+
+
         for (int i = 0; i < edges.size(); i++){
            EdgeSprite edgeSprite = edges.get(i);
             if (edgeSprite.getBoundingRectangle().contains(x, Math.abs(Gdx.graphics.getHeight() - y))) {
                 System.out.println("A right click on an edge has been clicked");
+                EdgeSprite newEdge;
                 Edge edge = edgeSprite.edge;
+                if(edge.getPlayer() != null){
+                    continue;
+                }
                 edge.setPlayer(this.currPlayer);
                 // Change the sprite's color
 

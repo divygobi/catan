@@ -9,12 +9,15 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.EarClippingTriangulator;
-import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.*;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.ShortArray;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.util.*;
 
 
@@ -64,6 +67,7 @@ public class Board extends ApplicationAdapter {
 		this.stage = new Stage(new ScreenViewport());
 
 		this.edgeTexture = textureFactory.getEdgeTexture();
+		this.vertexTexture = textureFactory.getVertexTexture();
 		this.font = new BitmapFont();
 		font.setColor(Color.BLACK);
 		EarClippingTriangulator triangulator = new EarClippingTriangulator();
@@ -153,7 +157,11 @@ public class Board extends ApplicationAdapter {
 
 
 		//Add sprites for vertices
-		for(Vertex v: vertexSet.values()){
+		for(Map.Entry<String, Vertex> entry: vertexSet.entrySet()){
+			Vertex v = entry.getValue();
+			float[] coords = v.getPolygonCoords();
+				PolygonRegion polyRegion = new PolygonRegion(vertexTexture, coords, triangulator.computeTriangles(coords).toArray());
+				vertexSprites.add(new VertexSprite(polyRegion, v));
 
 		}
 
@@ -166,6 +174,50 @@ public class Board extends ApplicationAdapter {
 		multiplexer.addProcessor(boardInput);
 		Gdx.input.setInputProcessor(multiplexer);
 
+		Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
+
+		Label nameLabel = new Label("Name:", skin);
+		TextField nameText = new TextField("", skin);
+		Label addressLabel = new Label("Address:", skin);
+		TextField addressText = new TextField("", skin);
+
+		Table table = new Table();
+		stage.addActor(table);
+		table.setSize(260, 195);
+		table.setPosition(190, 142);
+		// table.align(Align.right | Align.bottom);
+
+	//	table.debug();
+
+		TextureRegion upRegion = skin.getRegion("default-slider-knob");
+		TextureRegion downRegion = skin.getRegion("default-slider-knob");
+		BitmapFont buttonFont = skin.getFont("default-font");
+
+		TextButton button = new TextButton("Button 1", skin);
+		button.addListener(new InputListener() {
+			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+				System.out.println("touchDown 1");
+				return false;
+			}
+		});
+		table.add(button);
+		// table.setTouchable(Touchable.disabled);
+
+		Table table2 = new Table();
+		stage.addActor(table2);
+		table2.setFillParent(true);
+		table2.bottom();
+
+		TextButton button2 = new TextButton("Button 2", skin);
+		button2.addListener(new InputListener() {
+			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+				System.out.println("touchDown 2");
+			//	table2.setTouchable(Touchable.disabled);
+				return false;
+			}
+		});
+		table2.add(button2);
+
 
 
 	}
@@ -174,16 +226,25 @@ public class Board extends ApplicationAdapter {
 	public void render () {
 		ScreenUtils.clear((float)79/255,(float)166/255,(float)235/255, 1);
 
+		stage.act(Gdx.graphics.getDeltaTime());
+		stage.draw();
+
 		batch.begin();
 		for (int i = 0; i < hexSprites.size(); i++){
 			PolygonSprite sprite = hexSprites.get(i);
 			sprite.draw(batch);
 		}
 
+
 		for (int i = 0; i < edgeSprites.size(); i++){
 			PolygonSprite sprite = edgeSprites.get(i);
 			sprite.draw(batch);
 		}
+		for (int i = 0; i < vertexSprites.size(); i++){
+			PolygonSprite sprite = vertexSprites.get(i);
+			sprite.draw(batch);
+		}
+
 
 		for(Object h: hexes.toArray()){
 			Hex hex = (Hex)h;

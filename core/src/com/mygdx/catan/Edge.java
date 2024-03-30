@@ -23,7 +23,7 @@ public class Edge {
         this.rectCoords = new float[][]{{x1,y1}, {x2,y2}};
         this.neighboringHexes = new HashSet<Hex>();
         this.connectedVertices = new HashSet<Vertex>();
-        this.polygonCoords = calculateRectangleFromLine(rectCoords[0],rectCoords[1],5);
+        this.polygonCoords = calculateRectangleFromLine(rectCoords[0],rectCoords[1],10);
         this.player = null;
     }
 
@@ -44,10 +44,10 @@ public class Edge {
         rectangle[1] = point1[1] + n[1] * width / 2;
         rectangle[2] = point1[0] - n[0] * width / 2;
         rectangle[3] = point1[1] - n[1] * width / 2;
-        rectangle[4] = point2[0] + n[0] * width / 2;
-        rectangle[5] = point2[1] + n[1] * width / 2;
-        rectangle[6] = point2[0] - n[0] * width / 2;
-        rectangle[7] = point2[1] - n[1] * width / 2;
+        rectangle[6] = point2[0] + n[0] * width / 2;
+        rectangle[7] = point2[1] + n[1] * width / 2;
+        rectangle[4] = point2[0] - n[0] * width / 2;
+        rectangle[5] = point2[1] - n[1] * width / 2;
 
         return rectangle;
     }

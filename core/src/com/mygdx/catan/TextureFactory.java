@@ -20,5 +20,19 @@ public class TextureFactory {
         return new TextureRegion(new Texture(pix));
     }
 
+    public TextureRegion getVertexTexture() {
+        Pixmap pix = new Pixmap(1,1,Pixmap.Format.RGB888);
+        pix.setColor(Color.BLACK);
+        pix.fill();
+        return new TextureRegion(new Texture(pix));
+    }
+
+    public TextureRegion getVertexTexture(Color color) {
+        Pixmap pix = new Pixmap(1,1,Pixmap.Format.RGB888);
+        pix.setColor(color);
+        pix.fill();
+        return new TextureRegion(new Texture(pix));
+    }
+
 }
 

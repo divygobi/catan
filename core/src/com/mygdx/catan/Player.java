@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class Player {
-    HashMap<String, Integer> resourceCards;
+    HashMap<Hex.Resource, Integer> resourceCards;
     ArrayList<String> devCards;
 
     private Color color;
@@ -39,18 +39,10 @@ public class Player {
     private boolean hasLongestRoad;
     private boolean hasLargestArmy;
 
-
-    public void placeSettlement(){
-
-    }
-
-    public void placeRoad(){
-
-    }
-
-    public void upgradeSettlementToCity(){
-
-    }
+    //state vars
+    private boolean isPlacingRoad;
+    private boolean isPlacingSettlement;
+    private boolean isPlacingCity;
 
 
     public Color getColor() {
@@ -60,4 +52,13 @@ public class Player {
     public void setColor(Color color) {
         this.color = color;
     }
+
+    public void addResource(int amount, Hex.Resource resource){
+        this.resourceCards.put(resource, this.resourceCards.get(resource) + amount);
+    }
+
+    public void subtractResource(int amount, Hex.Resource resource){
+        this.resourceCards.put(resource, this.resourceCards.get(resource) - amount);
+    }
+
 }

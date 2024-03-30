@@ -6,6 +6,7 @@ import java.util.HashSet;
 public class Vertex {
     private HashSet<Hex> neighboringHexes;
     private float[] rectCoords;
+    private float[] polygonCoords;
     private HashSet<Edge> connectedEdges;
     private Player player;
     private boolean hasSettlement;
@@ -20,6 +21,8 @@ public class Vertex {
         this.hasSettlement = false;
         this.hasCity = false;
         this.hasRobber = false;
+        this.polygonCoords = calculateSquareFromPoint(rectCoords,25);
+
     }
 
     public void addHexes(Hex h){
@@ -36,6 +39,23 @@ public class Vertex {
         if (o == null || getClass() != o.getClass()) return false;
         Vertex vertex = (Vertex) o;
         return Arrays.equals(rectCoords, vertex.rectCoords);
+    }
+
+    public static float[] calculateSquareFromPoint(float[] point, int length){
+
+        // calculate vertices
+        float[] square = new float[8];
+        square[0] = point[0] + length / 2;
+        square[1] = point[1] + length / 2;
+        square[2] = point[0] - length / 2;
+        square[3] = point[1] + length / 2;
+        square[4] = point[0] - length / 2;
+        square[5] = point[1] - length / 2;
+        square[6] = point[0] + length / 2;
+        square[7] = point[1] - length / 2;
+
+        return square;
+
     }
 
     @Override
@@ -73,6 +93,14 @@ public class Vertex {
 
     public void setHasRobber(boolean hasRobber) {
         this.hasRobber = hasRobber;
+    }
+
+    public float[] getPolygonCoords() {
+        return polygonCoords;
+    }
+
+    public void setPolygonCoords(float[] polygonCoords) {
+        this.polygonCoords = polygonCoords;
     }
 }
 
