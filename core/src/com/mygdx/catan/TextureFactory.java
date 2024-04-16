@@ -8,7 +8,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 public class TextureFactory {
     public TextureRegion getEdgeTexture() {
         Pixmap pix = new Pixmap(1,1,Pixmap.Format.RGB888);
-        pix.setColor(Color.BLACK);
+
+        pix.setColor(Color.rgb888(244,164,96));
         pix.fill();
         return new TextureRegion(new Texture(pix));
     }
@@ -22,7 +23,7 @@ public class TextureFactory {
 
     public TextureRegion getVertexTexture() {
         Pixmap pix = new Pixmap(1,1,Pixmap.Format.RGB888);
-        pix.setColor(Color.BLACK);
+        pix.setColor(Color.GOLDENROD);
         pix.fill();
         return new TextureRegion(new Texture(pix));
     }

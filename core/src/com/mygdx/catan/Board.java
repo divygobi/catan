@@ -7,14 +7,19 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.graphics.glutils.FacedCubemapData;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.EarClippingTriangulator;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.ShortArray;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import sun.tools.jconsole.Tab;
+//import sun.util.locale.provider.FallbackLocaleProviderAdapter;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -30,8 +35,8 @@ public class Board extends ApplicationAdapter {
 	ArrayList<HexSprite> hexSprites;
 	ArrayList<EdgeSprite> edgeSprites;
 	ArrayList<VertexSprite> vertexSprites;
-	HashMap<String,Edge> edgeSet;
-	HashMap<String,Vertex> vertexSet;
+	HashMap<String, Edge> edgeSet;
+	HashMap<String, Vertex> vertexSet;
 	TextureRegion edgeTexture;
 	TextureRegion vertexTexture;
 	TextureFactory textureFactory;
@@ -39,18 +44,22 @@ public class Board extends ApplicationAdapter {
 	MyInputProcessor boardInput;
 	HashMap<Integer, Integer> numberCounts;
 	HashMap<Hex.Resource, Integer> resourceCounts;
+	ArrayList<Player> players = new ArrayList<>();
 	private Stage stage;
-
+	boolean diceDisabled;
 
 	//coordinate range for axial coordinate system, p,q,r.
 	public static final int[] coordRange = new int[]{-2, 3};
 	public static final float hexSize = 50;
-	public static final float SQRT3 = (float)Math.sqrt(3);
+	public static final float SQRT3 = (float) Math.sqrt(3);
+	public static final int numPlayers = 4;
 
 	@Override
-	public void create () {
+	public void create() {
 
-		Gdx.graphics.setWindowedMode(900,700);
+		Util util = new Util();
+
+		Gdx.graphics.setWindowedMode(900, 700);
 		this.batch = new PolygonSpriteBatch();
 		this.img = new Texture("badlogic.jpg");
 		this.shape = new ShapeRenderer();
@@ -65,23 +74,28 @@ public class Board extends ApplicationAdapter {
 		this.vertexSet = new HashMap<>();
 		this.textureFactory = new TextureFactory();
 		this.stage = new Stage(new ScreenViewport());
+		diceDisabled = false;
 
 		this.edgeTexture = textureFactory.getEdgeTexture();
 		this.vertexTexture = textureFactory.getVertexTexture();
 		this.font = new BitmapFont();
 		font.setColor(Color.BLACK);
 		EarClippingTriangulator triangulator = new EarClippingTriangulator();
-		this.currPlayer = new Player(1);
+
 
 		int width = Gdx.graphics.getWidth();
 		int height = Gdx.graphics.getHeight();
 		TextureRegion sampleRegion = createSampleTextureRegion();
 
 
+		for(int i = 0; i < numPlayers; i++){
+			players.add(new Player(i+1));
+		}
+		this.currPlayer = players.get(0);
 
-		for(Hex hex: hexes){
+		for (Hex hex : hexes) {
 			int[] coords = hex.getCoord();
-			float[] rectCoords = axialToRectCoords(coords[0], coords[1], coords[2], width/2 + 200, height/2);
+			float[] rectCoords = axialToRectCoords(coords[0], coords[1], coords[2], width / 2 + 200, height / 2);
 			hex.setRectCoords(rectCoords);
 			float[] vertices = calculateHexVertices(rectCoords[0], rectCoords[1], hexSize);
 
@@ -90,13 +104,13 @@ public class Board extends ApplicationAdapter {
 			PolygonRegion polyRegion = new PolygonRegion(hex.getTextureRegion(), vertices, triangulator.computeTriangles(vertices).toArray());
 			hexSprites.add(new HexSprite(polyRegion, hex));
 
-			for(int i = 0; i < vertices.length; i+=2){
+			for (int i = 0; i < vertices.length; i += 2) {
 				float x = vertices[i];
-				float y = vertices[i+1];
+				float y = vertices[i + 1];
 				String formattedVertexKey = vertexToString(x, y);
 
-				if(!vertexSet.containsKey(formattedVertexKey)){
-					vertexSet.put(formattedVertexKey, new Vertex(x,y));
+				if (!vertexSet.containsKey(formattedVertexKey)) {
+					vertexSet.put(formattedVertexKey, new Vertex(x, y));
 				}
 
 				Vertex vertex = vertexSet.get(formattedVertexKey);
@@ -106,8 +120,8 @@ public class Board extends ApplicationAdapter {
 			}
 
 
-			for(int i = 0; i < edges.length; i+=1){
-			//	System.out.println(Arrays.toString(edges[i]));
+			for (int i = 0; i < edges.length; i += 1) {
+				//	System.out.println(Arrays.toString(edges[i]));
 				float x1 = edges[i][0];
 				float y1 = edges[i][1];
 				float x2 = edges[i][2];
@@ -115,14 +129,13 @@ public class Board extends ApplicationAdapter {
 				String formattedEdgeKey = edgeToString(x1, y1, x2, y2);
 				String formattedReverseEdgeKey = edgeToString(x2, y2, x1, y1);
 
-				if(!edgeSet.containsKey(formattedEdgeKey) && !edgeSet.containsKey(formattedReverseEdgeKey)){
+				if (!edgeSet.containsKey(formattedEdgeKey) && !edgeSet.containsKey(formattedReverseEdgeKey)) {
 					edgeSet.put(formattedEdgeKey, new Edge(x1, y1, x2, y2));
 				}
 				Edge edge;
-				if(edgeSet.containsKey(formattedEdgeKey)){
+				if (edgeSet.containsKey(formattedEdgeKey)) {
 					edge = edgeSet.get(formattedEdgeKey);
-				}
-				else{
+				} else {
 					edge = edgeSet.get(formattedReverseEdgeKey);
 				}
 
@@ -146,10 +159,9 @@ public class Board extends ApplicationAdapter {
 		}
 
 		//Add sprites for edges
-		//TODO Make sprites look prettier, might need to not use triangles
-		for(Map.Entry<String, Edge> entry: edgeSet.entrySet()){
+		for (Map.Entry<String, Edge> entry : edgeSet.entrySet()) {
 			Edge e = entry.getValue();
-		//	System.out.println(entry.getKey());
+			//	System.out.println(entry.getKey());
 			float[] coords = e.getPolygonCoords();
 			PolygonRegion polyRegion = new PolygonRegion(edgeTexture, coords, triangulator.computeTriangles(coords).toArray());
 			edgeSprites.add(new EdgeSprite(polyRegion, e));
@@ -157,11 +169,11 @@ public class Board extends ApplicationAdapter {
 
 
 		//Add sprites for vertices
-		for(Map.Entry<String, Vertex> entry: vertexSet.entrySet()){
+		for (Map.Entry<String, Vertex> entry : vertexSet.entrySet()) {
 			Vertex v = entry.getValue();
 			float[] coords = v.getPolygonCoords();
-				PolygonRegion polyRegion = new PolygonRegion(vertexTexture, coords, triangulator.computeTriangles(coords).toArray());
-				vertexSprites.add(new VertexSprite(polyRegion, v));
+			PolygonRegion polyRegion = new PolygonRegion(vertexTexture, coords, triangulator.computeTriangles(coords).toArray());
+			vertexSprites.add(new VertexSprite(polyRegion, v));
 
 		}
 
@@ -183,73 +195,101 @@ public class Board extends ApplicationAdapter {
 
 		Table table = new Table();
 		stage.addActor(table);
-		table.setSize(260, 195);
-		table.setPosition(190, 142);
-		// table.align(Align.right | Align.bottom);
+		table.setSize(400, 800);
+		table.setPosition(10, 10);
+		table.align(Align.left & Align.top);
 
-	//	table.debug();
+		table.debug();
 
 		TextureRegion upRegion = skin.getRegion("default-slider-knob");
 		TextureRegion downRegion = skin.getRegion("default-slider-knob");
 		BitmapFont buttonFont = skin.getFont("default-font");
 
-		TextButton button = new TextButton("Button 1", skin);
+		TextButton button = new TextButton("Next player", skin);
 		button.addListener(new InputListener() {
-			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				System.out.println("touchDown 1");
+			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+				goNextPlayer();
+				System.out.println("It is now player " + currPlayer.playerId + "'s turn");
 				return false;
 			}
 		});
-		table.add(button);
-		// table.setTouchable(Touchable.disabled);
+		table.add(button).width(200).space(10);
 
-		Table table2 = new Table();
-		stage.addActor(table2);
-		table2.setFillParent(true);
-		table2.bottom();
+		table.row();
 
-		TextButton button2 = new TextButton("Button 2", skin);
+		TextButton button2 = new TextButton("Roll dice", skin);
 		button2.addListener(new InputListener() {
-			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				System.out.println("touchDown 2");
-			//	table2.setTouchable(Touchable.disabled);
-				return false;
+			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+				if(diceDisabled){
+					System.out.println("You can only roll once per turn");
+					return false;
+				}
+				else {
+					System.out.println("Player " + currPlayer.playerId + " has rolled " + Util.getRollDice());
+					diceDisabled = true;
+					return true;
+				}
+
 			}
 		});
-		table2.add(button2);
+		table.add(button2).width(100).space(10);
+
+		table.row();
+
+		//Stack playerStats = new Stack();
+		Label titleLabel = new Label("Player " + currPlayer.playerId + "'s resources:", skin);
+		Label woodLabel = new Label("Wood:" + currPlayer.resourceCards.get(Hex.Resource.WOOD), skin);
+		Label wheatLabel = new Label("Wheat:" + currPlayer.resourceCards.get(Hex.Resource.WHEAT), skin);
+		Label rockLabel = new Label("Rock:" + currPlayer.resourceCards.get(Hex.Resource.ROCK), skin);
+		Label clayLabel = new Label("Clay:" + currPlayer.resourceCards.get(Hex.Resource.CLAY), skin);
+		Label sheepLabel = new Label("Sheep:" + currPlayer.resourceCards.get(Hex.Resource.SHEEP), skin);
+
+		table.add(titleLabel).align(Align.left);
+		table.row();
+		table.add(woodLabel).align(Align.left);
+		table.row();
+		table.add(wheatLabel).align(Align.left);
+		table.row();
+		table.add(rockLabel).align(Align.left);
+		table.row();
+		table.add(clayLabel).align(Align.left);
+		table.row();
+		table.add(sheepLabel).align(Align.left);
+
+		//table.add(playerStats).space(20);
 
 
 
 	}
 
 	@Override
-	public void render () {
-		ScreenUtils.clear((float)79/255,(float)166/255,(float)235/255, 1);
+	public void render() {
+		ScreenUtils.clear((float) 79 / 255, (float) 166 / 255, (float) 235 / 255, 1);
 
 		stage.act(Gdx.graphics.getDeltaTime());
 		stage.draw();
 
 		batch.begin();
-		for (int i = 0; i < hexSprites.size(); i++){
+		for (int i = 0; i < hexSprites.size(); i++) {
 			PolygonSprite sprite = hexSprites.get(i);
 			sprite.draw(batch);
 		}
 
 
-		for (int i = 0; i < edgeSprites.size(); i++){
+		for (int i = 0; i < edgeSprites.size(); i++) {
 			PolygonSprite sprite = edgeSprites.get(i);
 			sprite.draw(batch);
 		}
-		for (int i = 0; i < vertexSprites.size(); i++){
+		for (int i = 0; i < vertexSprites.size(); i++) {
 			PolygonSprite sprite = vertexSprites.get(i);
 			sprite.draw(batch);
 		}
 
 
-		for(Object h: hexes.toArray()){
-			Hex hex = (Hex)h;
+		for (Object h : hexes.toArray()) {
+			Hex hex = (Hex) h;
 			float[] rectCoords = hex.getRectCoords();
-			font.draw(batch, Integer.toString(hex.getValue()), rectCoords[0]-5, rectCoords[1]+5);
+			font.draw(batch, Integer.toString(hex.getValue()), rectCoords[0] - 5, rectCoords[1] + 5);
 		}
 
 //		batch.draw(img, 0, 0);
@@ -320,39 +360,39 @@ public class Board extends ApplicationAdapter {
 
 	//This method takes in a list of hexes which have axial coordinates
 	//It then transforms them into rectangular coordinates
-	private float[] axialToRectCoords(int p, int q, int r, int xCenter, int yCenter){
-		float[] rectCoords = new float[]{hexSize * (SQRT3 * q + SQRT3 / 2 * r), hexSize * ((float)1.5 * r)};
+	private float[] axialToRectCoords(int p, int q, int r, int xCenter, int yCenter) {
+		float[] rectCoords = new float[]{hexSize * (SQRT3 * q + SQRT3 / 2 * r), hexSize * ((float) 1.5 * r)};
 		// Adjust for the center of the board
 		rectCoords[0] += xCenter;
 		rectCoords[1] += yCenter;
 		return rectCoords;
 	}
 
-	private ArrayList<Hex>  generateHexes(){
+	private ArrayList<Hex> generateHexes() {
 
 		ArrayList<Hex> hexes = new ArrayList<>();
-		for (int p = coordRange[0]; p < coordRange[1]; p++){
+		for (int p = coordRange[0]; p < coordRange[1]; p++) {
 			for (int q = coordRange[0]; q < coordRange[1]; q++) {
 				for (int r = coordRange[0]; r < coordRange[1]; r++) {
-					if(p+q+r == 0){
+					if (p + q + r == 0) {
 						int value = Hex.getRandValue();
 						Hex.Resource resource = Hex.getRandResource();
-						while(this.numberCounts.get(value) == 0){
+						while (this.numberCounts.get(value) == 0) {
 							value = Hex.getRandValue();
 						}
-						while (this.resourceCounts.get(resource) == 0){
+						while (this.resourceCounts.get(resource) == 0) {
 							resource = Hex.getRandResource();
 						}
-						numberCounts.put(value, numberCounts.get(value)-1);
-						resourceCounts.put(resource, resourceCounts.get(resource)-1);
+						numberCounts.put(value, numberCounts.get(value) - 1);
+						resourceCounts.put(resource, resourceCounts.get(resource) - 1);
 						Hex hex = new Hex(resource, value, new int[]{p, q, r});
 						//Hex hex = new Hex(new int[]{0,0,0});
 						hexes.add(hex);
 						System.out.println("Made hex with" + hex);
-						}
 					}
 				}
 			}
+		}
 		return hexes;
 	}
 
@@ -393,19 +433,19 @@ public class Board extends ApplicationAdapter {
 	}
 
 	//TODO Add to config file
-	private void initializeBoardCounts(){
+	private void initializeBoardCounts() {
 
-		this.numberCounts.put(2,1);
-		for(int i = 3; i < 12; i++){
-			this.numberCounts.put(i,2);
+		this.numberCounts.put(2, 1);
+		for (int i = 3; i < 12; i++) {
+			this.numberCounts.put(i, 2);
 		}
-		this.numberCounts.put(12,1);
+		this.numberCounts.put(12, 1);
 
 		this.resourceCounts.put(Hex.Resource.ROCK, 4);
 		this.resourceCounts.put(Hex.Resource.CLAY, 4);
 		this.resourceCounts.put(Hex.Resource.WHEAT, 4);
 		this.resourceCounts.put(Hex.Resource.WOOD, 4);
-		this.resourceCounts.put(Hex.Resource.SHEEP,3 );
+		this.resourceCounts.put(Hex.Resource.SHEEP, 3);
 
 	}
 
@@ -421,9 +461,18 @@ public class Board extends ApplicationAdapter {
 		return String.format("%.2f,%.2f to %.2f,%.2f", x1, y1, x2, y2);
 	}
 
+	public void goNextPlayer(){
+		Player nextPlayer = players.get((this.currPlayer.playerId) % numPlayers);
+		this.currPlayer = nextPlayer;
+		System.out.println("Setting player to: " + this.currPlayer.playerId);
+
+		this.boardInput.currPlayer = nextPlayer;
+		diceDisabled = false;
+	}
+
 
 	@Override
-	public void dispose () {
+	public void dispose() {
 		batch.dispose();
 		img.dispose();
 	}

@@ -21,7 +21,7 @@ public class Vertex {
         this.hasSettlement = false;
         this.hasCity = false;
         this.hasRobber = false;
-        this.polygonCoords = calculateSquareFromPoint(rectCoords,25);
+        this.polygonCoords = calculateSquareFromPoint(rectCoords,15);
 
     }
 

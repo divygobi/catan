@@ -55,13 +55,14 @@ public class MyInputProcessor implements InputProcessor {
             if (vertexSprite.getBoundingRectangle().contains(x, Math.abs(Gdx.graphics.getHeight() - y))) {
 
                 VertexSprite newVertex;
-                System.out.println("A right click on an edge has been clicked");
                 Vertex vertex = vertexSprite.vertex;
                 if(vertex.getPlayer() != null){
                     continue;
                 }
                 vertex.setPlayer(this.currPlayer);
+                this.currPlayer.colonizeVertex(vertex);
                 // Change the sprite's color
+                System.out.println("A right click on an edge has been clicked for player: " + this.currPlayer.playerId);
 
                 float[] coords = vertex.getPolygonCoords();
                 System.out.println(vertexSprite.vertex);
@@ -87,7 +88,10 @@ public class MyInputProcessor implements InputProcessor {
                     continue;
                 }
                 edge.setPlayer(this.currPlayer);
+                this.currPlayer.colonizeEdge(edge);
                 // Change the sprite's color
+
+                System.out.println("A right click on an edge has been clicked for player: " + this.currPlayer.playerId);
 
                 float[] coords = edge.getPolygonCoords();
                 System.out.println(edgeSprite.edge);
