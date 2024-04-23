@@ -56,15 +56,16 @@ public class MyInputProcessor implements InputProcessor {
 
                 VertexSprite newVertex;
                 Vertex vertex = vertexSprite.vertex;
-                if(vertex.getPlayer() != null){
+                if(vertex.getPlayer() != null || vertex.hasCity() ||(!currPlayer.checkSettlementPossible() && !currPlayer.checkCityPossible())){
                     continue;
                 }
                 vertex.setPlayer(this.currPlayer);
+                float[] coords = vertex.getPolygonCoords();
+
                 this.currPlayer.colonizeVertex(vertex);
                 // Change the sprite's color
                 System.out.println("A right click on an edge has been clicked for player: " + this.currPlayer.playerId);
 
-                float[] coords = vertex.getPolygonCoords();
                 System.out.println(vertexSprite.vertex);
                 PolygonRegion polyRegion = new PolygonRegion(textureFactory.getEdgeTexture(vertex.getPlayer().getColor()), coords, triangulator.computeTriangles(coords).toArray());
                 newVertex = new VertexSprite(polyRegion, vertex);
