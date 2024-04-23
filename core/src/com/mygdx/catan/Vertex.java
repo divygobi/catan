@@ -33,6 +33,10 @@ public class Vertex {
         connectedEdges.add(e);
     }
 
+    public HashSet<Hex> getNeighboringHexes(){
+        return this.neighboringHexes;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

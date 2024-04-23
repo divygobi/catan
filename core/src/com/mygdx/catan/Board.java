@@ -213,7 +213,7 @@ public class Board extends ApplicationAdapter {
 				return false;
 			}
 		});
-		table.add(button).width(200).space(10);
+		table.add(button).width(200).space(10).align(Align.center);
 
 		table.row();
 
@@ -225,41 +225,84 @@ public class Board extends ApplicationAdapter {
 					return false;
 				}
 				else {
-					System.out.println("Player " + currPlayer.playerId + " has rolled " + Util.getRollDice());
+					int roll = Util.getRollDice();
+					System.out.println("Player " + currPlayer.playerId + " has rolled " + roll);
+					updateResourceCounts(roll);
 					diceDisabled = true;
 					return true;
 				}
 
 			}
 		});
-		table.add(button2).width(100).space(10);
+		table.add(button2).width(100).space(10).align(Align.center);
 
 		table.row();
 
 		//Stack playerStats = new Stack();
-		Label titleLabel = new Label("Player " + currPlayer.playerId + "'s resources:", skin);
-		Label woodLabel = new Label("Wood:" + currPlayer.resourceCards.get(Hex.Resource.WOOD), skin);
-		Label wheatLabel = new Label("Wheat:" + currPlayer.resourceCards.get(Hex.Resource.WHEAT), skin);
-		Label rockLabel = new Label("Rock:" + currPlayer.resourceCards.get(Hex.Resource.ROCK), skin);
-		Label clayLabel = new Label("Clay:" + currPlayer.resourceCards.get(Hex.Resource.CLAY), skin);
-		Label sheepLabel = new Label("Sheep:" + currPlayer.resourceCards.get(Hex.Resource.SHEEP), skin);
+		Label titleLabel = new Label("Player " + players.get(0).playerId + "'s resources:", skin);
+		Label woodLabel = new Label("Wood:" + players.get(0).resourceCards.get(Hex.Resource.WOOD), skin);
+		Label wheatLabel = new Label("Wheat:" + players.get(0).resourceCards.get(Hex.Resource.WHEAT), skin);
+		Label rockLabel = new Label("Rock:" + players.get(0).resourceCards.get(Hex.Resource.ROCK), skin);
+		Label clayLabel = new Label("Clay:" + players.get(0).resourceCards.get(Hex.Resource.CLAY), skin);
+		Label sheepLabel = new Label("Sheep:" + players.get(0).resourceCards.get(Hex.Resource.SHEEP), skin);
+
+		Label titleLabel2 = new Label("Player " + players.get(1).playerId + "'s resources:", skin);
+		Label woodLabel2 = new Label("Wood:" + players.get(1).resourceCards.get(Hex.Resource.WOOD), skin);
+		Label wheatLabel2 = new Label("Wheat:" + players.get(1).resourceCards.get(Hex.Resource.WHEAT), skin);
+		Label rockLabel2 = new Label("Rock:" + players.get(1).resourceCards.get(Hex.Resource.ROCK), skin);
+		Label clayLabel2 = new Label("Clay:" + players.get(1).resourceCards.get(Hex.Resource.CLAY), skin);
+		Label sheepLabel2 = new Label("Sheep:" + players.get(1).resourceCards.get(Hex.Resource.SHEEP), skin);
+
+		Label titleLabel3 = new Label("Player " + players.get(2).playerId + "'s resources:", skin);
+		Label woodLabel3 = new Label("Wood:" + players.get(2).resourceCards.get(Hex.Resource.WOOD), skin);
+		Label wheatLabel3 = new Label("Wheat:" + players.get(2).resourceCards.get(Hex.Resource.WHEAT), skin);
+		Label rockLabel3 = new Label("Rock:" + players.get(2).resourceCards.get(Hex.Resource.ROCK), skin);
+		Label clayLabel3 = new Label("Clay:" + players.get(2).resourceCards.get(Hex.Resource.CLAY), skin);
+		Label sheepLabel3 = new Label("Sheep:" + players.get(2).resourceCards.get(Hex.Resource.SHEEP), skin);
+
+		Label titleLabel4 = new Label("Player " + players.get(3).playerId + "'s resources:", skin);
+		Label woodLabel4 = new Label("Wood:" + players.get(3).resourceCards.get(Hex.Resource.WOOD), skin);
+		Label wheatLabel4 = new Label("Wheat:" + players.get(3).resourceCards.get(Hex.Resource.WHEAT), skin);
+		Label rockLabel4 = new Label("Rock:" + players.get(3).resourceCards.get(Hex.Resource.ROCK), skin);
+		Label clayLabel4 = new Label("Clay:" + players.get(3).resourceCards.get(Hex.Resource.CLAY), skin);
+		Label sheepLabel4 = new Label("Sheep:" + players.get(3).resourceCards.get(Hex.Resource.SHEEP), skin);
+
 
 		table.add(titleLabel).align(Align.left);
+		table.add(titleLabel2).align(Align.left);
 		table.row();
 		table.add(woodLabel).align(Align.left);
+		table.add(woodLabel2).align(Align.left);
 		table.row();
 		table.add(wheatLabel).align(Align.left);
+		table.add(wheatLabel2).align(Align.left);
 		table.row();
 		table.add(rockLabel).align(Align.left);
+		table.add(rockLabel2).align(Align.left);
 		table.row();
 		table.add(clayLabel).align(Align.left);
+		table.add(clayLabel2).align(Align.left);
 		table.row();
 		table.add(sheepLabel).align(Align.left);
+		table.add(sheepLabel2).align(Align.left);
 
 		//table.add(playerStats).space(20);
 
 
 
+	}
+
+	private void updateResourceCounts(int roll) {
+		for (Player player: players){
+			for(Vertex building: player.getVerticesOwned()){
+				int revenue = building.hasCity() ? 2 : 1;
+				for(Hex hex: building.getNeighboringHexes()){
+					if (hex.getValue() == roll){
+						player.addResource(revenue, hex.getType());
+					}
+				}
+			}
+		}
 	}
 
 	@Override
