@@ -56,15 +56,23 @@ public class MyInputProcessor implements InputProcessor {
 
                 VertexSprite newVertex;
                 Vertex vertex = vertexSprite.vertex;
-                if(vertex.getPlayer() != null || vertex.hasCity() ||(!currPlayer.checkSettlementPossible() && !currPlayer.checkCityPossible())){
-                    continue;
+                //if the vertex is already owned by a player
+                //TODO move into checkSettlementPossible type shit
+                if((vertex.getPlayer() != null && !vertex.getPlayer().equals(this.currPlayer))
+                        //If there is city, nothing can be done
+                        || vertex.hasCity()
+                        //If no buildings are possible
+                        || (!currPlayer.checkSettlementPossible(vertex) && !currPlayer.checkCityPossible(vertex))){
+                    //continue;
+                    System.out.println("invalid click on a vertex");
+                    return false;
                 }
                 vertex.setPlayer(this.currPlayer);
                 float[] coords = vertex.getPolygonCoords();
 
                 this.currPlayer.colonizeVertex(vertex);
                 // Change the sprite's color
-                System.out.println("A right click on an edge has been clicked for player: " + this.currPlayer.playerId);
+                System.out.println("A right click on an vertex has been clicked for player: " + this.currPlayer.playerId);
 
                 System.out.println(vertexSprite.vertex);
                 PolygonRegion polyRegion = new PolygonRegion(textureFactory.getEdgeTexture(vertex.getPlayer().getColor()), coords, triangulator.computeTriangles(coords).toArray());

@@ -120,6 +120,7 @@ public class Vertex {
 
     public float[] getPolygonCoords() {
         if(hasSettlement){
+            System.out.println("Upgrading to city");
             return cityPolygonCoords;
         }
         return settlementPolygonCoords;

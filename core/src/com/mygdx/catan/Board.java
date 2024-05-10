@@ -59,7 +59,7 @@ public class Board extends ApplicationAdapter {
 
 		Util util = new Util();
 
-		Gdx.graphics.setWindowedMode(900, 700);
+		Gdx.graphics.setWindowedMode(900, 900);
 		this.batch = new PolygonSpriteBatch();
 		this.img = new Texture("badlogic.jpg");
 		this.shape = new ShapeRenderer();

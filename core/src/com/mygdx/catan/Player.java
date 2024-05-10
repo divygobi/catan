@@ -8,6 +8,7 @@ import java.awt.image.AreaAveragingScaleFilter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
 
 
 public class Player {
@@ -150,16 +151,18 @@ public class Player {
         }
     }
 
-    public Boolean checkRoadPossible(){
+    public Boolean checkRoadPossible(Vertex v){
         return this.resourceCards.get(Hex.Resource.WOOD) >= 1 && this.resourceCards.get(Hex.Resource.CLAY) >= 1;
     }
 
-    public Boolean checkSettlementPossible(){
-        return this.resourceCards.get(Hex.Resource.WOOD) >= 1 && this.resourceCards.get(Hex.Resource.CLAY) >= 1 &&
+    public Boolean checkSettlementPossible(Vertex v){
+        boolean roadsConnected = true;
+
+        return roadsConnected && this.resourceCards.get(Hex.Resource.WOOD) >= 1 && this.resourceCards.get(Hex.Resource.CLAY) >= 1 &&
                 this.resourceCards.get(Hex.Resource.WHEAT) >= 1 && this.resourceCards.get(Hex.Resource.SHEEP) >= 1;
     }
 
-    public Boolean checkCityPossible(){
+    public Boolean checkCityPossible(Vertex v){
         return this.resourceCards.get(Hex.Resource.WHEAT) >= 2 && this.resourceCards.get(Hex.Resource.ROCK) >= 3;
     }
 
@@ -176,5 +179,16 @@ public class Player {
        return this.verticesOwned;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Player player = (Player) o;
+        return playerId == player.playerId;
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(playerId);
+    }
 }
